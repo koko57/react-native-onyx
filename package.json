@@ -1,6 +1,6 @@
 {
   "name": "react-native-onyx",
-  "version": "1.0.58",
+  "version": "1.0.72",
   "author": "Expensify, Inc.",
   "homepage": "https://expensify.com",
   "description": "State management for React Native",
@@ -31,6 +31,7 @@
   "react-native": "native.js",
   "main": "native.js",
   "browser": "web.js",
+  "types": "lib/index.d.ts",
   "scripts": {
     "lint": "eslint .",
     "lint-tests": "eslint tests/**",
@@ -50,6 +51,7 @@
     "@react-native-community/eslint-config": "^2.0.0",
     "@testing-library/jest-native": "^3.4.2",
     "@testing-library/react-native": "^7.0.2",
+    "@types/react": "^18.2.14",
     "babel-eslint": "^10.1.0",
     "babel-jest": "^26.2.2",
     "babel-loader": "^8.2.5",
@@ -57,39 +59,41 @@
     "eslint-config-expensify": "^2.0.38",
     "eslint-plugin-jsx-a11y": "^6.6.1",
     "eslint-plugin-react": "^7.31.10",
+    "idb-keyval": "^6.2.1",
     "jest": "^26.5.2",
     "jest-cli": "^26.5.2",
     "jsdoc-to-markdown": "^7.1.0",
-    "localforage": "^1.10.0",
     "metro-react-native-babel-preset": "^0.72.3",
     "prop-types": "^15.7.2",
     "react": "18.2.0",
     "react-native": "0.71.2",
+    "react-native-device-info": "^10.3.0",
     "react-native-performance": "^2.0.0",
     "react-native-quick-sqlite": "^8.0.0-beta.2",
     "react-test-renderer": "18.1.0",
+    "type-fest": "^3.12.0",
     "webpack": "^5.72.1",
     "webpack-cli": "^4.9.2",
     "webpack-merge": "^5.8.0"
   },
   "peerDependencies": {
-    "localforage": "^1.10.0",
-    "localforage-removeitems": "^1.4.0",
+    "idb-keyval": "^6.2.1",
     "react": ">=18.1.0",
     "react-native-performance": "^4.0.0",
-    "react-native-quick-sqlite": "^8.0.0-beta.2"
+    "react-native-quick-sqlite": "^8.0.0-beta.2",
+    "react-native-device-info": "^10.3.0"
   },
   "peerDependenciesMeta": {
+    "idb-keyval": {
+      "optional": true
+    },
     "react-native-performance": {
       "optional": true
     },
     "react-native-quick-sqlite": {
       "optional": true
     },
-    "localforage": {
-      "optional": true
-    },
-    "localforage-removeitems": {
+    "react-native-device-info": {
       "optional": true
     }
   },
