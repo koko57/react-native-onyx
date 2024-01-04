@@ -256,9 +256,7 @@ describe('Onyx', () => {
                 });
 
                 // Then the arrays should be replaced as expected
-                expect(cache.getValue('mockKey')).toEqual([
-                    {ID: 3}, {added: 'field'}, {}, {ID: 1000},
-                ]);
+                expect(cache.getValue('mockKey')).toEqual([{ID: 3}, {added: 'field'}, {}, {ID: 1000}]);
             });
 
             it('Should merge arrays inside objects correctly', () => {
@@ -309,15 +307,19 @@ describe('Onyx', () => {
                 expect(cache.getValue('mockKey')).toEqual({value: 'myMockObject'});
             });
 
-            it('Should do nothing to a key which value is `undefined`', () => {
+            it('Should ignore `undefined` values', () => {
                 // Given cache with existing data
                 cache.set('mockKey', {ID: 5});
 
                 // When merge is called key value pair and the value is undefined
+                cache.merge({mockKey: {ID: undefined}});
+
+                // Then the key should still be in cache and the value unchanged
+                expect(cache.getValue('mockKey')).toEqual({ID: 5});
+
                 cache.merge({mockKey: undefined});
 
                 // Then the key should still be in cache and the value unchanged
-                expect(cache.hasCacheForKey('mockKey')).toBe(true);
                 expect(cache.getValue('mockKey')).toEqual({ID: 5});
             });
 
@@ -343,6 +345,18 @@ describe('Onyx', () => {
                 expect(() => cache.merge(0)).toThrow();
                 expect(() => cache.merge({})).not.toThrow();
             });
+
+            it('Should merge `null` values', () => {
+                // `null` values can override existing values and should also
+                // be preserved during merges.
+                cache.set('mockKey', {ID: 5});
+                cache.set('mockNullKey', null);
+
+                cache.merge({mockKey: null});
+
+                expect(cache.getValue('mockKey')).toEqual(null);
+                expect(cache.getValue('mockNullKey')).toEqual(null);
+            });
         });
 
         describe('hasPendingTask', () => {
@@ -363,11 +377,10 @@ describe('Onyx', () => {
                 expect(cache.hasPendingTask('mockTask')).toBe(true);
 
                 // When the promise is completed
-                return waitForPromisesToResolve()
-                    .then(() => {
-                        // Then `hasPendingTask` should return false
-                        expect(cache.hasPendingTask('mockTask')).toBe(false);
-                    });
+                return waitForPromisesToResolve().then(() => {
+                    // Then `hasPendingTask` should return false
+                    expect(cache.hasPendingTask('mockTask')).toBe(false);
+                });
             });
         });
 
@@ -426,8 +439,7 @@ describe('Onyx', () => {
 
             // Onyx init introduces some side effects e.g. calls the getAllKeys
             // We're clearing mocks to have a fresh calls history
-            return waitForPromisesToResolve()
-                .then(() => jest.clearAllMocks());
+            return waitForPromisesToResolve().then(() => jest.clearAllMocks());
         }
 
         // Initialize clean modules before each test
@@ -504,9 +516,7 @@ describe('Onyx', () => {
             // Given Storage with 10 different keys
             StorageMock.getItem.mockResolvedValue('"mockValue"');
             const range = _.range(10);
-            StorageMock.getAllKeys.mockResolvedValue(
-                _.map(range, number => `${ONYX_KEYS.COLLECTION.MOCK_COLLECTION}${number}`),
-            );
+            StorageMock.getAllKeys.mockResolvedValue(_.map(range, (number) => `${ONYX_KEYS.COLLECTION.MOCK_COLLECTION}${number}`));
             let connections;
 
             // Given Onyx is configured with max 5 keys in cache
@@ -517,10 +527,10 @@ describe('Onyx', () => {
                     // Given 10 connections for different keys
                     connections = _.map(range, (number) => {
                         const key = `${ONYX_KEYS.COLLECTION.MOCK_COLLECTION}${number}`;
-                        return ({
+                        return {
                             key,
                             connectionId: Onyx.connect({key, callback: jest.fn()}),
-                        });
+                        };
                     });
                 })
                 .then(waitForPromisesToResolve)
@@ -555,24 +565,26 @@ describe('Onyx', () => {
             StorageMock.getItem.mockResolvedValue('"mockValue"');
             StorageMock.getAllKeys.mockResolvedValue([ONYX_KEYS.TEST_KEY]);
 
-            return initOnyx()
-                .then(() => {
-                    // When a component is rendered
-                    render(<TestComponentWithOnyx />);
-                })
-                .then(waitForPromisesToResolve)
-                .then(() => {
-                    // When the key was removed from cache
-                    cache.drop(ONYX_KEYS.TEST_KEY);
-                })
+            return (
+                initOnyx()
+                    .then(() => {
+                        // When a component is rendered
+                        render(<TestComponentWithOnyx />);
+                    })
+                    .then(waitForPromisesToResolve)
+                    .then(() => {
+                        // When the key was removed from cache
+                        cache.drop(ONYX_KEYS.TEST_KEY);
+                    })
 
-                // Then When another component using the same storage key is rendered
-                .then(() => render(<TestComponentWithOnyx />))
-                .then(waitForPromisesToResolve)
-                .then(() => {
-                    // Then Async storage `getItem` should be called twice
-                    expect(StorageMock.getItem).toHaveBeenCalledTimes(2);
-                });
+                    // Then When another component using the same storage key is rendered
+                    .then(() => render(<TestComponentWithOnyx />))
+                    .then(waitForPromisesToResolve)
+                    .then(() => {
+                        // Then Async storage `getItem` should be called twice
+                        expect(StorageMock.getItem).toHaveBeenCalledTimes(2);
+                    })
+            );
         });
 
         it('Expect multiple calls to getItem when multiple keys are used', () => {
@@ -616,9 +628,7 @@ describe('Onyx', () => {
             // Given storage with some data
             StorageMock.getItem.mockResolvedValue('"mockValue"');
             const range = _.range(1, 10);
-            StorageMock.getAllKeys.mockResolvedValue(_.map(range, n => `key${n}`));
-
-            jest.useFakeTimers();
+            StorageMock.getAllKeys.mockResolvedValue(_.map(range, (n) => `key${n}`));
 
             // Given Onyx with LRU size of 3
             return initOnyx({maxCachedKeysCount: 3})

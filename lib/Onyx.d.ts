@@ -1,15 +1,7 @@
 import {Component} from 'react';
-import {PartialDeep} from 'type-fest';
 import * as Logger from './Logger';
-import {
-    CollectionKey,
-    CollectionKeyBase,
-    DeepRecord,
-    KeyValueMapping,
-    OnyxCollection,
-    OnyxEntry,
-    OnyxKey,
-} from './types';
+import * as ActiveClientManager from './ActiveClientManager';
+import {CollectionKey, CollectionKeyBase, DeepRecord, KeyValueMapping, NullishDeep, OnyxCollection, OnyxEntry, OnyxKey} from './types';
 
 /**
  * Represents a mapping object where each `OnyxKey` maps to either a value of its corresponding type in `KeyValueMapping` or `null`.
@@ -87,14 +79,14 @@ type OnyxUpdate =
               | {
                     onyxMethod: typeof METHOD.MERGE;
                     key: TKey;
-                    value: PartialDeep<KeyValueMapping[TKey]>;
+                    value: NullishDeep<KeyValueMapping[TKey]>;
                 };
       }[OnyxKey]
     | {
           [TKey in CollectionKeyBase]: {
               onyxMethod: typeof METHOD.MERGE_COLLECTION;
               key: TKey;
-              value: Record<`${TKey}${string}`, PartialDeep<KeyValueMapping[TKey]>>;
+              value: Record<`${TKey}${string}`, NullishDeep<KeyValueMapping[TKey]>>;
           };
       }[CollectionKeyBase];
 
@@ -210,7 +202,7 @@ declare function multiSet(data: Partial<NullableKeyValueMapping>): Promise<void>
  * @param key ONYXKEYS key
  * @param value Object or Array value to merge
  */
-declare function merge<TKey extends OnyxKey>(key: TKey, value: PartialDeep<KeyValueMapping[TKey]>): Promise<void>;
+declare function merge<TKey extends OnyxKey>(key: TKey, value: NullishDeep<KeyValueMapping[TKey]>): Promise<void>;
 
 /**
  * Clear out all the data in the store
@@ -252,10 +244,7 @@ declare function clear(keysToPreserve?: OnyxKey[]): Promise<void>;
  * @param collectionKey e.g. `ONYXKEYS.COLLECTION.REPORT`
  * @param collection Object collection keyed by individual collection member keys and values
  */
-declare function mergeCollection<TKey extends CollectionKeyBase, TMap>(
-    collectionKey: TKey,
-    collection: Collection<TKey, TMap, PartialDeep<KeyValueMapping[TKey]>>,
-): Promise<void>;
+declare function mergeCollection<TKey extends CollectionKeyBase, TMap>(collectionKey: TKey, collection: Collection<TKey, TMap, NullishDeep<KeyValueMapping[TKey]>>): Promise<void>;
 
 /**
  * Insert API responses and lifecycle data into Onyx
@@ -302,6 +291,11 @@ declare function hasPendingMergeForKey(key: OnyxKey): boolean;
  */
 declare function setMemoryOnlyKeys(keyList: OnyxKey[]): void;
 
+/**
+ * Sets the callback to be called when the clear finishes executing.
+ */
+declare function onClear(callback: () => void): void;
+
 declare const Onyx: {
     connect: typeof connect;
     disconnect: typeof disconnect;
@@ -320,6 +314,10 @@ declare const Onyx: {
     isSafeEvictionKey: typeof isSafeEvictionKey;
     METHOD: typeof METHOD;
     setMemoryOnlyKeys: typeof setMemoryOnlyKeys;
+    onClear: typeof onClear;
+    isClientManagerReady: typeof ActiveClientManager.isReady;
+    isClientTheLeader: typeof ActiveClientManager.isClientTheLeader;
+    subscribeToClientChange: typeof ActiveClientManager.subscribeToClientChange;
 };
 
 export default Onyx;
